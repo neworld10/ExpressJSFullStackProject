@@ -1,35 +1,25 @@
 import express, { request } from 'express';
+import timeout from 'connect-timeout';
 const app = express();
 const port = 3000;
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-var data = {
-    name: 'neworld'
-}
+app.use(timeout('5s'));
 
 app.get('/', (request, response) => {
-    return response.send('Hello World!');
+    setTimeout(() => {
+        response.send(`Hello World! after 10 secs.`);
+    }, 6000);
 });
 
-app.post('/users', (request, response) => {
-    const name = request.body.name;
-    const email = request.body.email;
-
-    return response.send(`${name} ${email}`);
-});
-
-app.put('/users/:name', (request, response) => {
-    const name = request.params.name;
-    const email = request.body.email;
-
-    const target = data.name === name ? data : null;
-    if (target) {
-        target.email = email;
-        return response.send(target);
+app.use((request, response, next) => {
+    if (!request.timedout) {
+        next();
     } else {
-        return response.status(404).send('User not found');
+        response.status(503).send({
+            status: 503,
+            message: 'Request_timeout',
+            data: null,
+        })
     }
 })
 
