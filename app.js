@@ -1,28 +1,22 @@
-import express, { request } from 'express';
-import timeout from 'connect-timeout';
+// const express = require('express');
+// const routes = require('./route/index.js');
+// const cors = require('cors');
+import express from 'express';
+import routes from './route/index.js';
+import cors from 'cors';
+
 const app = express();
 const port = 3000;
 
-app.use(timeout('5s'));
+app.use(cors('*'));
 
-app.get('/', (request, response) => {
-    setTimeout(() => {
-        response.send(`Hello World! after 10 secs.`);
-    }, 6000);
-});
+app.use('/public', express.static('public'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-app.use((request, response, next) => {
-    if (!request.timedout) {
-        next();
-    } else {
-        response.status(503).send({
-            status: 503,
-            message: 'Request_timeout',
-            data: null,
-        })
-    }
-})
+// Routes
+app.use('/', routes);
 
 app.listen(port, () => {
-    console.log(`Example app listen on port ${port}`);
+    console.log(`Example app listening on port ${port}`);
 });
