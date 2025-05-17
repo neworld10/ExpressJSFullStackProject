@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const userModel = require('../model/userModel.js');
 const {
     validEmail,
@@ -8,6 +9,8 @@ const {
     STATUS_CODE,
     STATUS_MESSAGE,
 } = require('../util/constant/httpStatusCode.js');
+
+const SALT_ROUNDS = 10;
 
 /**
  * 로그인
@@ -79,8 +82,11 @@ exports.signupUser = async (request, response, next) => {
 		        throw error;
 		    }
 		    
+        const bcrypt = require('bcrypt');
+
         const reqSignupData = {
             email,
+            password: hashedPassword,
             password,
             nickname,
             profileImagePath: profileImagePath || null,
@@ -248,9 +254,11 @@ exports.changePassword = async (request, response, next) => {
 		        throw error;
 		    }
     
+        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
         const requestData = {
             userId,
-            password,
+            password: hashedPassword,
         };
         const responseData = await userModel.changePassword(requestData);
 
