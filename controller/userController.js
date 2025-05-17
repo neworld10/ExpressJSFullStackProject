@@ -1,145 +1,375 @@
-// Dummy data, JSON구조
-const users = [
-    { userId: 1, name: 'John', email: 'john@example.com' },
-    { userId: 2, name: 'Jane', email: 'jane@example.com' },
-    { userId: 3, name: 'Bob', email: 'bob@example.com' },
-];
+const userModel = require('../model/userModel.js');
+const {
+    validEmail,
+    validNickname,
+    validPassword,
+} = require('../util/validUtil.js');
+const {
+    STATUS_CODE,
+    STATUS_MESSAGE,
+} = require('../util/constant/httpStatusCode.js');
 
-// 모든 사용자 정보를 반환하는 함수입니다.
-const getUsers = (request, response) => {
+/**
+ * 로그인
+ * 회원가입
+ * 유저 정보 가져오기
+ * 로그인 상태 체크
+ * 비밀번호 변경
+ * 회원 탈퇴
+ * 로그아웃
+ * 이메일 중복 체크
+ * 닉네임 중복 체크
+ */
+
+// 로그인
+exports.loginUser = async (request, response, next) => {
+    const { email, password } = request.body;
+
     try {
-        return response.status(200).json({
-            status: 200,
-            message: null,
-            data: users,
-        });
-    } catch (error) {
-        console.error(error);
-        return response.status(500).json({
-            status: 500,
-            message: 'internal_server_error',
-            data: null,
-        });
-    }
-};
-
-// ID를 기반으로 특정 사용자 정보를 반환하는 함수입니다.
-const getUser = (request, response) => {
-    try {
-        const userId = parseInt(request.params.user_id); // 요청에서 ID를 파싱합니다.
-        const user = users.find(user => user.userId === userId); // 해당 ID를 가진 사용자를 찾습니다.
-        if (!user) {
-            return response.status(404).json({
-                status: 404,
-                message: 'not_found_user',
-                data: null,
-            });
-        }
-
-        return response.status(200).json({
-            status: 200,
-            message: null,
-            data: user,
-        });
-    } catch (error) {
-        console.error(error);
-        return response.status(500).json({
-            status: 500,
-            message: 'internal_server_error',
-            data: null,
-        });
-    }
-};
-
-// 새로운 사용자를 추가하는 함수입니다.
-const addUser = (request, response) => {
-    try {
-        const newUser = {
-            userId: users.length + 1, // 새 사용자에게 고유 ID를 할당합니다.
-            name: request.body.name,
-            email: request.body.email,
+        if (!email) {
+		        const error = new Error(STATUS_MESSAGE.REQUIRED_EMAIL);
+		        error.status = STATUS_CODE.BAD_REQUEST;
+		        throw error;
+		    }
+		
+		    if (!password) {
+		        const error = new Error(STATUS_MESSAGE.REQUIRED_PASSWORD);
+		        error.status = STATUS_CODE.BAD_REQUEST;
+		        throw error;
+		    }
+	    
+        const requestData = {
+            email,
+            password,
         };
-        users.push(newUser); // 새 사용자를 목록에 추가합니다.
+        const responseData = await userModel.loginUser(requestData, response);
 
-        return response.status(201).json({
-            status: 201,
-            message: 'create_user_success',
-            data: newUser,
+        if (!responseData || responseData === null) {
+            const error = new Error(STATUS_MESSAGE.INVALID_EMAIL_OR_PASSWORD);
+            error.status = STATUS_CODE.UNAUTHORIZED;
+            throw error;
+        }
+        return response.status(STATUS_CODE.OK).json({
+            message: STATUS_MESSAGE.LOGIN_SUCCESS,
+            data: responseData,
         });
     } catch (error) {
-        console.error(error);
-        return response.status(500).json({
-            status: 500,
-            message: 'internal_server_error',
-            data: null,
-        });
+        return next(error);
     }
 };
 
-// 기존 사용자의 정보를 수정하는 함수입니다.
-const updateUser = (request, response) => {
+// 회원가입
+exports.signupUser = async (request, response, next) => {
+    const { email, password, nickname, profileImagePath } = request.body;
+
     try {
-        const user = users.find(
-            user => user.userId === parseInt(request.params.user_id),
-        ); // 수정할 사용자를 찾습니다.
-        if (!user) {
-            return response.status(404).json({
-                status: 404,
-                message: 'not_found_user',
+        if (!email || !validEmail(email)) {
+		        const error = new Error(STATUS_MESSAGE.INVALID_EMAIL);
+		        error.status = STATUS_CODE.BAD_REQUEST;
+		        throw error;
+		    }
+		    if (!nickname || !validNickname(nickname)) {
+		        const error = new Error(STATUS_MESSAGE.INVALID_NICKNAME);
+		        error.status = STATUS_CODE.BAD_REQUEST;
+		        throw error;
+		    }
+		    if (!password || !validPassword(password)) {
+		        const error = new Error(STATUS_MESSAGE.INVALID_PASSWORD);
+		        error.status = STATUS_CODE.BAD_REQUEST;
+		        throw error;
+		    }
+		    
+        const reqSignupData = {
+            email,
+            password,
+            nickname,
+            profileImagePath: profileImagePath || null,
+        };
+
+        const resSignupData = await userModel.signUpUser(reqSignupData);
+
+        if (resSignupData === 'already_exist_email') {
+            const error = new Error(STATUS_MESSAGE.ALREADY_EXIST_EMAIL);
+            error.status = STATUS_CODE.BAD_REQUEST;
+            throw error;
+        }
+
+        if (resSignupData === null) {
+            const error = new Error(STATUS_MESSAGE.SIGNUP_FAILED);
+            error.status = STATUS_CODE.INTERNAL_SERVER_ERROR;
+            throw error;
+        }
+
+        return response.status(STATUS_CODE.CREATED).json({
+            message: STATUS_MESSAGE.SIGNUP_SUCCESS,
+            data: resSignupData
+        });
+    } catch (error) {
+        return next(error);
+    }
+};
+
+// 유저 정보 가져오기
+exports.getUser = async (request, response, next) => {
+    const { user_id: userId } = request.params;
+
+    try {
+		    if (!userId) {
+		        const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
+		        error.status = STATUS_CODE.BAD_REQUEST;
+		        throw error;
+		    }
+		    
+        const requestData = {
+            userId,
+        };
+        const responseData = await userModel.getUser(requestData);
+
+        if (responseData === null) {
+            const error = new Error(STATUS_MESSAGE.NOT_FOUND_USER);
+            error.status = STATUS_CODE.NOT_FOUND;
+            throw error;
+        }
+
+        return response.status(200).json({
+            message: null,
+            data: responseData,
+        });
+    } catch (error) {
+        return next(error);
+    }
+};
+
+// 회원정보 수정
+exports.updateUser = async (request, response, next) => {
+    const { user_id: userId } = request.params;
+    const { nickname, profileImagePath } = request.body;
+
+    try {
+        if (!userId) {
+		        const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
+		        error.status = STATUS_CODE.BAD_REQUEST;
+		        throw error;
+		    }
+		
+		    if (!nickname) {
+		        const error = new Error(STATUS_MESSAGE.INVALID_NICKNAME);
+		        error.status = STATUS_CODE.BAD_REQUEST;
+		        throw error;
+		    }
+    
+        const requestData = {
+            userId,
+            nickname,
+            profileImagePath,
+        };
+        const responseData = await userModel.updateUser(requestData);
+
+        if (responseData === null) {
+            const error = new Error(STATUS_MESSAGE.NOT_FOUND_USER);
+            error.status = STATUS_CODE.NOT_FOUND;
+            throw error;
+        }
+
+        if (responseData === STATUS_MESSAGE.UPDATE_PROFILE_IMAGE_FAILED) {
+            const error = new Error(STATUS_MESSAGE.UPDATE_PROFILE_IMAGE_FAILED);
+            error.status = STATUS_CODE.INTERNAL_SERVER_ERROR;
+            throw error;
+        }
+
+        return response.status(STATUS_CODE.CREATED).json({
+            message: STATUS_MESSAGE.UPDATE_USER_DATA_SUCCESS,
+            data: null,
+        });
+    } catch (error) {
+        return next(error);
+    }
+};
+
+// 로그인 상태 체크
+exports.checkAuth = async (request, response, next) => {
+    const { userid: userId } = request.query;
+
+    try {
+		    if (!userId) {
+		        const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
+		        error.status = STATUS_CODE.BAD_REQUEST;
+		        throw error;
+		    }
+    
+        const requestData = {
+            userId,
+        };
+
+        const userData = await userModel.getUser(requestData);
+
+        if (!userData) {
+            const error = new Error(STATUS_MESSAGE.NOT_FOUND_USER);
+            error.status = STATUS_CODE.NOT_FOUND;
+            throw error;
+        }
+
+        if (parseInt(userData.userId, 10) !== parseInt(userId, 10)) {
+            const error = new Error(STATUS_MESSAGE.REQUIRED_AUTHORIZATION);
+            error.status = STATUS_CODE.UNAUTHORIZED;
+            throw error;
+        }
+
+        return response.status(STATUS_CODE.OK).json({
+            message: null,
+            data: {
+                userId,
+                email: userData.email,
+                nickname: userData.nickname,
+                profileImagePath: userData.profile_image || null,
+                auth_status: true,
+            },
+        });
+    } catch (error) {
+        return next(error);
+    }
+};
+
+// 비밀번호 변경
+exports.changePassword = async (request, response, next) => {
+    const { user_id: userId } = request.params;
+    const { password } = request.body;
+
+    try {
+        if (!userId) {
+		        const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
+		        error.status = STATUS_CODE.BAD_REQUEST;
+		        throw error;
+		    }
+		
+		    if (!password || !validPassword(password)) {
+		        const error = new Error(STATUS_MESSAGE.INVALID_PASSWORD);
+		        error.status = STATUS_CODE.BAD_REQUEST;
+		        throw error;
+		    }
+    
+        const requestData = {
+            userId,
+            password,
+        };
+        const responseData = await userModel.changePassword(requestData);
+
+        if (!responseData) {
+            const error = new Error(STATUS_MESSAGE.NOT_FOUND_USER);
+            error.status = STATUS_CODE.NOT_FOUND;
+            throw error;
+        }
+
+        return response.status(STATUS_CODE.CREATED).json({
+            message: STATUS_MESSAGE.CHANGE_USER_PASSWORD_SUCCESS,
+            data: null,
+        });
+    } catch (error) {
+        return next(error);
+    }
+};
+
+// 회원 탈퇴
+exports.softDeleteUser = async (request, response, next) => {
+    const { user_id: userId } = request.params;
+
+    try {
+        if (!userId) {
+		        const error = new Error(STATUS_MESSAGE.INVALID_USER_ID);
+		        error.status = STATUS_CODE.BAD_REQUEST;
+		        throw error;
+		    }
+    
+        const requestData = {
+            userId,
+        };
+        const responseData = await userModel.softDeleteUser(requestData);
+
+        if (responseData === null) {
+            const error = new Error(STATUS_MESSAGE.NOT_FOUND_USER);
+            error.status = STATUS_CODE.NOT_FOUND;
+            throw error;
+        }
+
+        return response.status(STATUS_CODE.OK).json({
+            message: STATUS_MESSAGE.DELETE_USER_DATA_SUCCESS,
+            data: null,
+        });
+    } catch (error) {
+        return next(error);
+    }
+};
+
+// 로그아웃
+exports.logoutUser = async (request, response, next) => {
+    const { userid: userId } = request.headers;
+
+    try {
+        return response.status(STATUS_CODE.END).json({
+		        message: STATUS_MESSAGE.LOGOUT_SUCCESS,
+		        data: null,
+        });
+    } catch (error) {
+        return next(error);
+    }
+};
+
+// 이메일 중복 체크
+exports.checkEmail = async (request, response, next) => {
+    const { email } = request.query;
+
+    try {
+        if (!email) {
+		        const error = new Error(STATUS_MESSAGE.INVALID_EMAIL);
+		        error.status = STATUS_CODE.BAD_REQUEST;
+		        throw error;
+		    }
+	    
+        const requestData = { email };
+
+        const resData = await userModel.checkEmail(requestData);
+
+        if (resData === null) {
+            return response.status(STATUS_CODE.OK).json({
+                message: STATUS_MESSAGE.AVAILVABLE_EMAIL,
                 data: null,
             });
         }
-        user.name = request.body.name; // 사용자 이름을 수정합니다.
-        user.email = request.body.email; // 사용자 이메일을 수정합니다.
 
-        return response.status(200).json({
-            status: 200,
-            message: 'update_user_success',
-            data: null,
-        });
+        const error = new Error(STATUS_MESSAGE.ALREADY_EXIST_EMAIL);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
     } catch (error) {
-        console.error(error);
-        return response.status(500).json({
-            status: 500,
-            message: 'internal_server_error',
-            data: null,
-        });
+        return next(error);
     }
 };
 
-// 사용자를 삭제하는 함수입니다.
-const deleteUser = (request, response) => {
+// 닉네임 중복 체크
+exports.checkNickname = async (request, response, next) => {
+    const { nickname } = request.query;
+
     try {
-        const userIndex = users.findIndex(
-            user => user.userId === parseInt(request.params.user_id),
-        ); // 삭제할 사용자의 인덱스를 찾습니다.
-        if (userIndex === -1) {
-            return response.status(404).json({
-                status: 404,
-                message: 'not_found_user',
+        if (!nickname) {
+		        const error = new Error(STATUS_MESSAGE.INVALID_NICKNAME);
+		        error.status = STATUS_CODE.BAD_REQUEST;
+		        throw error;
+		    }
+    
+        const requestData = { nickname };
+
+        const responseData = await userModel.checkNickname(requestData);
+
+        if (!responseData) {
+            return response.status(STATUS_CODE.OK).json({
+                message: STATUS_MESSAGE.AVAILABLE_NICKNAME,
                 data: null,
             });
         }
-        users.splice(userIndex, 1); // 사용자 목록에서 해당 사용자를 제거합니다.
-        return response.status(200).json({
-            status: 200,
-            message: 'delete_user_success',
-            data: null,
-        });
-    } catch (error) {
-        console.error(error);
-        return response.status(500).json({
-            status: 500,
-            message: 'internal_server_error',
-            data: null,
-        });
-    }
-};
 
-export default {
-    getUsers,
-    getUser,
-    addUser,
-    updateUser,
-    deleteUser,
+        const error = new Error(STATUS_MESSAGE.ALREADY_EXIST_EMAIL);
+        error.status = STATUS_CODE.BAD_REQUEST;
+        throw error;
+    } catch (error) {
+        return next(error);
+    }
 };
