@@ -1,6 +1,6 @@
 const express = require('express');
 const postController = require('../controller/postController.js');
-
+const isLoggedIn = require('../util/authUtil.js');
 const router = express.Router();
 
 router.get('/posts', postController.getPosts);

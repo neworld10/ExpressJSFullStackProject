@@ -17,7 +17,7 @@ const { STATUS_MESSAGE } = require('../util/constant/httpStatusCode');
 
 // 로그인
 exports.loginUser = async (requestData, response) => {
-    const { email, password } = requestData;
+    const { email, password, sessionId } = requestData;
 
     const sql = `SELECT * FROM user_table WHERE email = ? AND deleted_at IS NULL;`;
     const results = await dbConnect.query(sql, [email], response);
@@ -45,10 +45,15 @@ exports.loginUser = async (requestData, response) => {
         email: results[0].email,
         nickname: results[0].nickname,
         profileImagePath: results[0].profile_image_path,
+        sessionId,
         created_at: results[0].created_at,
         updated_at: results[0].updated_at,
         deleted_at: results[0].deleted_at,
     };
+
+    // 세션 업데이트 로직
+    const sessionSql = `UPDATE user_table SET session_id = ? WHERE user_id = ?;`;
+    await dbConnect.query(sessionSql, [sessionId, user.userId]);
 
     return user;
 };
@@ -228,6 +233,25 @@ exports.checkNickname = async requestData => {
     const results = await dbConnect.query(sql, [nickname]);
 
     if (!results || results.length === 0) return null;
+
+    return results;
+};
+
+// 유저 세션 정보 삭제
+exports.destroyUserSession = async (requestData, response) => {
+    const { userId } = requestData;
+
+    const sql = `
+    UPDATE user_table
+    SET session_id = NULL
+    WHERE user_id = ${userId} AND session_id IS NOT NULL;
+    `;
+
+    const results = await dbConnect.query(sql, response);
+
+    if (!results) {
+        return null;
+    }
 
     return results;
 };
