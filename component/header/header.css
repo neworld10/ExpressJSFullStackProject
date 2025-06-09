@@ -1,0 +1,86 @@
+header {
+    width: 100%;
+    display: grid;
+    grid-template-areas: 'lbtn title rbtn';
+    grid-template-columns: 40px 1fr 40px;
+
+    align-items: center;
+    justify-content: center;
+    padding: 32px 8px;
+
+    border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+    background-color: #f4f5f7;
+    position: absolute;
+    top: 0;
+    z-index: 99;
+}
+
+header h1 {
+    grid-area: title;
+
+    font-size: 32px;
+    line-height: 1.5em;
+    letter-spacing: -0.02em;
+    color: #000000;
+
+    text-align: center;
+
+    font-weight: 400;
+}
+
+header .back {
+    grid-area: lbtn;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+}
+
+header .profile {
+    grid-area: rbtn;
+    position: relative;
+}
+
+header .profile img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+
+    object-fit: cover;
+
+    cursor: pointer;
+}
+
+header .drop {
+    position: absolute;
+    top: 100%;
+    right: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    width: 110px;
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+header .drop a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0;
+
+    text-decoration: none;
+    color: #000;
+    font-size: 12px;
+}
+
+header .drop a:hover {
+    background: #e9e9e9;
+}
+
+.none {
+    display: none !important;
+}

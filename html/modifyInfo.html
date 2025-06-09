@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="kr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link
+            rel="stylesheet"
+            href="../css/login.css"
+            crossorigin="anonymous"
+        />
+        <title>STARTUPCODE Edu Community</title>
+    </head>
+    <body>
+        <section class="wrap">
+            <h1 class="title">회원정보수정</h1>
+
+            <article>
+                <div class="profileUploadContainer">
+                    <img
+                        id="profilePreview"
+                        src=""
+                        alt="프로필 사진 미리보기"
+                        style="max-width: 100px; max-height: 100px"
+                    />
+                    <label for="profile" class="profileUploadButton">
+                        변경
+                    </label>
+                    <input
+                        type="file"
+                        name="profile"
+                        id="profile"
+                        placeholder="프로필 사진을 업로드 해주세요"
+                        accept="image/*"
+                        style="display: none"
+                    />
+                </div>
+                <div class="inputBox">
+                    <label>이메일</label>
+                    <p class="defaultText" id="id"></p>
+                </div>
+                <div class="inputBox">
+                    <label for="pwck">닉네임*</label>
+                    <input
+                        type="text"
+                        name="nickname"
+                        id="nickname"
+                        placeholder="닉네임을 입력해 주세요"
+                    />
+                    <p class="helperText" name="nickname"></p>
+                </div>
+                <div class="buttons">
+                    <button id="signupBtn">수정하기</button>
+                    <a id="withdrawBtn">회원 탈퇴</a>
+                </div>
+                <div id="toastContainer"></div>
+            </article>
+        </section>
+        <div class="background"></div>
+    </body>
+    <script src="../js/modifyInfo.js" type="module"></script>
+</html>

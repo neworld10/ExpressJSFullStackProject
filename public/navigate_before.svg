@@ -1,0 +1,10 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Navigation / navigate_before">
+<mask id="mask0_136_764" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="40" height="40">
+<rect id="Bounding box" width="40" height="40" fill="#D9D9D9"/>
+</mask>
+<g mask="url(#mask0_136_764)">
+<path id="navigate_before" d="M23.3503 29.423L13.9102 19.9829L23.3503 10.5321L24.8417 12.0235L16.893 19.9829L24.8417 27.9316L23.3503 29.423Z" fill="#1C1B1F"/>
+</g>
+</g>
+</svg>

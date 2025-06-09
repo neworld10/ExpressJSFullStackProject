@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="kr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>게시글 수정</title>
+        <link
+            rel="stylesheet"
+            href="../css/board-write.css"
+            crossorigin="anonymous"
+        />
+    </head>
+    <body>
+        <div class="wrap">
+            <h2>게시글 수정</h2>
+            <div class="inputBox">
+                <label>제목*</label>
+                <input
+                    type="text"
+                    id="title"
+                    placeholder="제목을 입력해 주세요. (최대 26자)"
+                />
+            </div>
+            <div class="inputBox">
+                <label>내용*</label>
+                <textarea id="content"></textarea>
+            </div>
+            <div class="inputBox">
+                <label class="non-border">이미지</label>
+                <label id="imagePreviewText"></label>
+                <input
+                    class="non-border"
+                    type="file"
+                    id="image"
+                    placeholder="파일을 선택해주세요."
+                    accept="image/*"
+                />
+            </div>
+            <button id="submit">수정하기</button>
+        </div>
+        <div class="background"></div>
+    </body>
+    <script src="../js/board-write.js" type="module"></script>
+</html>

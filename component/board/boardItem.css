@@ -1,0 +1,87 @@
+.boardItem {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+    padding: 16px 0;
+    border: 1px solid rgba(241, 241, 243, 1);
+    border-radius: 8px;
+
+    cursor: pointer;
+    box-shadow: 3px 4px 4px 0px #cccccc40;
+}
+
+.boardItem .date {
+    align-self: flex-end;
+
+    font-size: 12px;
+    line-height: 17px;
+    margin-left: 60px;
+    color: rgba(171, 174, 186, 1);
+    letter-spacing: -0.02em;
+    padding: 0 20px;
+}
+
+.boardItem .title {
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 32px;
+
+    color: #000000;
+    letter-spacing: -0.02em;
+
+    margin-bottom: 24px;
+    padding: 0 20px;
+}
+
+.boardItem .info {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    column-gap: 16px;
+    padding-bottom: 16px;
+    padding-left: 20px;
+    border-bottom: 1px solid gray;
+}
+
+.boardItem .info h3,
+.boardItem .info b {
+    font-size: 15px;
+    font-weight: 200;
+    line-height: 17px;
+    letter-spacing: -0.02em;
+
+    color: black;
+}
+
+.boardItem .writerInfo {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    column-gap: 16px;
+    padding: 0 20px;
+}
+
+.boardItem .img {
+    width: 32px;
+    height: 32px;
+
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.boardItem .img img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+.boardItem .writer {
+    font-size: 14px;
+    line-height: 22px;
+    letter-spacing: -0.02em;
+
+    color: rgba(92, 97, 112, 1);
+}
